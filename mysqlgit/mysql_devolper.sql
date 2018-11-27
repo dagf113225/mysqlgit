@@ -427,7 +427,74 @@ AND  sname<>'刘燕凤'
 SELECT rname  FROM t_role  WHERE  rid=
 (SELECT  sjob  FROM  t_stus  WHERE sname='彭勃')
 
+
+SELECT   * FROM  t_emp
+
+SELECT  COUNT(*) FROM  t_emp  WHERE ename=  AND  epwd=
+
+SELECT  cname  FROM  t_classes
+
+SELECT  COUNT(*)  FROM  t_classes
+
+--  创建一张表
+CREATE  TABLE  t_menu
+(
+   tid  INT   PRIMARY KEY  AUTO_INCREMENT,
+   tname  VARCHAR(50), -- 标题名称
+   turl  VARCHAR(50), -- 标题链接
+   tstats  INT  -- 标题的状态 1:正常  0:不显示
+
+)
+-- 删除表
+DROP  TABLE  t_menu
+
+-- 插入数据
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('Java频道','',1);
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('python频道','',1);
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('JavaScript频道','',1);
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('DB频道','',1);
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('小程序频道','',1);
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('go频道','',1);
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('php频道','',1);
+
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('Fluter频道','',1
+
+INSERT  INTO  t_menu(tname,turl,tstats)
+VALUES('分布式频道','',1);
+
+SELECT  * FROM t_menu
+
+SELECT  tname,turl  FROM   t_menu
+-- {{},{},{},{},{},{},{},{},{}}
+
+-- 班级
+SELECT  cid,cname  FROM  t_classes
+
+SELECT  sname  FROM  t_stus  WHERE  scid=?
+
+-- 
+SELECT  *  FROM  t_stus
+
+-- 男女的比例
+SELECT ssex,COUNT(*) FROM t_stus  GROUP  BY ssex 
+
+-- 1.学生籍贯的比例
+-- 2.学生职务的比例
+-- 3.学生的年龄的比例
+
+   
+
 -- 软件 查询 70%
+
+-- 联表查询和高级查询
 
 -- 存储过程
 
