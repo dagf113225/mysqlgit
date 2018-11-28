@@ -183,6 +183,89 @@ select  rownum,e.*   from    t_employee    e
 select  *  from (select  rownum  rm,  e.* from   t_employee    e
 where rownum<=3*2) temp  where  temp.rm>(2-1)*3
 
+
+-- 多表查询 
+select   *  from  t_depts
+
+select  * from t_employee
+
+--笛卡尔积
+select   *  from  t_depts,t_employee
+
+-- 普通连接查询
+
+-- 查询每个员工的所属部门信息和个人信息
+
+-- 员工的部门编号等于部门编号
+-- 普通查询
+select   *  from  t_depts d,t_employee  e
+where  e.tdnum=d.dnum;
+
+-- 内连接查询 A表 inner   join   B表 ..on 在什么条件下连接
+select  * from  t_employee  e  inner   join  t_depts d 
+on e.tdnum=d.dnum
+
+-- 左连接查询  以左表为基准表
+-- 查询每个员工的所属部门的信息(包括没有部门的员工)
+select  * from  t_employee  e  left   join  t_depts d 
+on e.tdnum=d.dnum
+
+--右连接查询 以右表为基准表
+-- 查询每个部门的所属员工(包括部门没有员工的部门信息)
+select  * from  t_employee  e  right   join  t_depts d 
+on e.tdnum=d.dnum
+
+-- 全连接，所有的都查询，包括所有对应不上的。
+
+select  * from  t_employee  e  full   join  t_depts d 
+on e.tdnum=d.dnum
+
+
+-- 查询李涛的部门的名称
+
+--1.内连接查询
+select d.dname   from   t_employee  e   inner  join  t_depts  d 
+on  e.tdnum=d.dnum where e.tname='李涛';
+--2.子查询  效率比较慢，建议使用连接查询
+select  d.dname from  t_depts d  where 
+d.dnum=(select  e.tdnum  from   t_employee  e where e.tname='李涛')
+
+--3.查询质量部的员工的信息
+select  e.tname,d.dname
+from  t_depts  d  inner  join  t_employee e  on  
+d.dnum=e.tdnum   where d.dname='质量部'
+
+select  e.tname  from  t_employee  e  
+where e.tdnum=(select d.dnum  from  t_depts  d  where d.dname='质量部')
+
+select  e.tname, temp.dname from  
+(select d.dnum ,d.dname from  t_depts  d  where d.dname='质量部') temp 
+inner  join   t_employee  e   on temp.dnum=e.tdnum 
+
+
+-- 查询每个部门的员工的数量
+select   count(tname) ,d.dname  from     t_depts  d 
+left   join t_employee  e  on  d.dnum=e.tdnum
+group   by  d.dname 
+-- 查询每个部门的员工的数量部门人数大于1人的
+select   count(tname) ,d.dname  from     t_depts  d 
+left   join t_employee  e  on  d.dnum=e.tdnum
+group   by  d.dname   having  count(tname)>1
+
+
+-- 查询每个部门的员工的数量按降序排列
+select   count(tname) ,d.dname  from     t_depts  d 
+left   join t_employee  e  on  d.dnum=e.tdnum
+group   by  d.dname   order  by count(tname)  desc
+
+
+-- 查询每个部门的籍贯的员工数量(双分组查询)
+select   count(tname) ,d.dname ,nvl(e.taddress,'没有') from     t_depts  d 
+left   join t_employee  e  on  d.dnum=e.tdnum
+group   by  d.dname ,e.taddress
+
+
+
 -- 高级查询
 
 --PL-SQL块
