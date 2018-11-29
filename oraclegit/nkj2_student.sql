@@ -312,6 +312,7 @@ begin
    select  stusex  into v_sex  from  t_students  where  stuname=v_name;
     dbms_output.put_line(v_name||',学生的性别为:'||v_sex);
     
+  
     --对性别进行判断
     -- 比较值是一个 =
     if  v_sex='男' then
@@ -319,7 +320,6 @@ begin
     else
         v_salary:=1000;
     end  if;
-    
     -- 执行数据库学生表的的更新
     update  t_students  set  money=money+v_salary where 
     stuname=v_name;
@@ -333,12 +333,60 @@ begin
     dbms_output.put_line(v_str);
 -- 异常  
 exception
-
 when others then
 
   v_str:='没得这个人';
  dbms_output.put_line(v_str);
 end;
+
+-- 循环控制  算1..100之和
+declare 
+  v_sum  number:=0;
+begin
+      
+      -- for中的变量不需要定义
+      for v_i  in 1..100  loop
+         v_sum:=v_sum+v_i;
+      end  loop;
+      
+      -- 输出和
+      dbms_output.put_line('和为:'||v_sum);   
+end;
+
+select  *  from  t_test
+
+delete  from  t_test;
+commit;
+
+-- 批量数据
+declare 
+begin
+   for  v_i  in 1..5000000000  loop
+        if  mod(v_i,2)=0  then
+          insert  into  t_test values(v_i,'张'||v_i,sysdate);
+        else 
+          insert  into  t_test values(v_i,'李'||v_i,to_date('1992-12-30','yyyy-MM-dd'));
+        end if;
+    
+   end  loop;
+   commit;
+end;
+
+-- while...loop
+
+--1.100之和
+declare
+v_i number:=1;
+v_sum  number:=0;
+begin
+
+   while v_i<=100  loop
+    v_sum:=v_sum+v_i;
+    v_i:=v_i+1;
+   end  loop;
+    dbms_output.put_line('和为:'||v_sum); 
+end;
+
 
 
 --存储过程
