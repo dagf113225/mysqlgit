@@ -264,15 +264,94 @@ select   count(tname) ,d.dname ,nvl(e.taddress,'没有') from     t_depts  d
 left   join t_employee  e  on  d.dnum=e.tdnum
 group   by  d.dname ,e.taddress
 
-
-
 -- 高级查询
 
 --PL-SQL块
 
+-- 块,是把一组也就是多条sql在一起执行
+
+
+--块的结构
+declare
+ -- 变量
+begin
+ -- 多条sql语句
+end;
+-----------------------------------------------------------------------------------------------
+-- 检查用户是否是男的，如果是男的，工资加100，如果是女的，工资加50
+
+
+-- 输入一个数，判断这个数是偶数和奇数
+accept  num   prompt '请输入一个数';
+declare
+-- 定义一个变量  :=表示的是给变量赋值
+numa number:=&num;
+begin
+  --判断这个数
+  if   mod(numa,2)=0    then
+    -- 输出  ||表示的是连接   
+    dbms_output.put_line('这个数'||numa||'是偶数');
+  else
+     dbms_output.put_line('这个数'||numa||'是奇数');
+  end  if;
+end;
+------------------------------------------------------------------------------------
+select  * from  t_students
+
+-- 输出一个学生的姓名，如果是男的,奖励500，如果是女的奖励1000元
+-- 并输出这个学生的整体的信息
+accept  uname  prompt '请输入一个学生的姓名:';
+declare
+  -- 定义学生的变量  := 是给一个变量赋值
+  v_name  varchar2(50):='&uname';
+  v_sex  t_students.stusex%type;
+  v_salary  t_students.money%type;
+  v_str  varchar2(200);
+begin
+   --查询这个学生的性别  在sql语句中赋值用into,但是只能附一个值， 不能附多个值
+   select  stusex  into v_sex  from  t_students  where  stuname=v_name;
+    dbms_output.put_line(v_name||',学生的性别为:'||v_sex);
+    
+    --对性别进行判断
+    -- 比较值是一个 =
+    if  v_sex='男' then
+        v_salary:=500;
+    else
+        v_salary:=1000;
+    end  if;
+    
+    -- 执行数据库学生表的的更新
+    update  t_students  set  money=money+v_salary where 
+    stuname=v_name;
+    commit;
+    
+    --输出这个人的最新的信息
+    select stuname||'工资为:'||money  into  v_str  from  t_students where 
+    stuname=v_name;
+    
+    --输出
+    dbms_output.put_line(v_str);
+-- 异常  
+exception
+
+when others then
+
+  v_str:='没得这个人';
+ dbms_output.put_line(v_str);
+end;
+
 
 --存储过程
+create  or  replace   procedure  p_query
+(
 
+)
+as
+
+begin 
+
+
+end;
 
 --自定义函数
 
