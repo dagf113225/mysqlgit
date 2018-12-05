@@ -390,18 +390,129 @@ end;
 
 
 --存储过程
-create  or  replace   procedure  p_query
-(
+-- 性能优越，编译一次，后面就不需要编译
+-- 存储的名字，我们编程语言可以通过名字来call
+-- 过程pl-sql块，一次性能够解决复杂业务逻辑。
 
+-- 结构
+select   *  from  t_emplog
+
+delete  from  t_emplog
+
+select  *  from  t_employee
+
+commit;
+--检查登录，并记录日志，日志表
+-- select  判断   insert  
+create  or  replace  procedure p_checkuser
+(
+   v_name   in  varchar2,  -- 传入的姓名
+   v_pwd   in  varchar2,  --传入的密码
+   v_msg  out  varchar2   -- 输出消息  --一个值
 )
 as
-
-begin 
-
-
+v_count   number:=0;
+begin
+   -- 检查登录
+   select  count(*)  into v_count  from  t_employee e 
+   where e.tname=v_name  and  trim(e.tpwd)=v_pwd;
+  
+   if v_count>0 then
+      v_msg:='登录成功';
+   else
+      v_msg:='登录失败';
+   end  if;
+   
+     dbms_output.put_line('输出的消息为:'||v_msg);
+  
+   -- 插入到日志表
+   insert  into  t_emplog   values(seq_emplog.nextval,v_name,sysdate,v_msg);
+   commit;
 end;
 
---自定义函数
+-- 1.返回游标结果集
+
+select   * from  t_depts
+select  *  from  t_employee
+
+-- 查询**（传入的参数）部门的员工的信息，
+-- 如果是工人，工资加100，如果是临时工加50，如果是组长和总经理，工资加200
+--输出这个部门的所有的员工的更新后的信息，和更新的数量。
+
+create   or   replace   procedure   p_one
+(
+   v_dname  in  varchar2, -- 不需要有长度
+   v_dmsg  out  varchar2,
+   v_updatecount  out  number
+)
+as
+v_count  number:=0;
+v_money   number:=0;
+v_upcount number:=0;
+v_msg  varchar2(100);
+
+ 
+begin
+      --1. 健壮性考虑   这个部门有没有   一个值into 一行一列
+      select  count(*)   into  v_count  from  t_depts where dname=v_dname;
+      
+      --2.判断这个部门存不存在
+       if   v_count>0  then
+            --1.查询这个部门的所属员工  部门名称
+          --  select   *  from  t_employee  where tdnum =(select t_depts.dnum
+          --  from  t_depts  where dname=v_dname);
+          
+          --结果集
+             for v_linedata  in  (select   *  from   t_employee e  right  join
+                t_depts  d   on e.tdnum=d.dnum  where d.dname=v_dname) loop
+                   -- dbms_output.put_line(v_linedata.tname||','||v_linedata.tjob);
+                   
+                      if v_linedata.tjob='工人'  then
+                      
+                           v_money:=100;
+                      
+                      elsif  v_linedata.tjob='临时工'  then
+                           v_money:=50;
+                      
+                      else
+                             v_money:=200;
+                      end  if;
+                      
+                    --dbms_output.put_line(v_linedata.tname||','||v_linedata.tjob||','||v_money);
+             
+                   -- 更新员工的工资
+                   update t_employee set tsalary =tsalary+v_money  where tname=v_linedata.tname;
+                   commit;
+                   v_upcount:=v_upcount+1;
+               
+                   --查询更新后的员工的信息
+                   select  tname||',职务为:'||tjob||',工资为:'||tsalary  into v_msg  from    t_employee  where tname=v_linedata.tname;
+               dbms_output.put_line('v_msg,'||v_msg);
+                   v_dmsg:=v_dmsg||v_msg||',';
+             end  loop;
+             v_updatecount:=v_upcount;
+            
+             dbms_output.put_line('v_dmsg,'||v_dmsg);
+       else  --没有这个部门
+          dbms_output.put_line('没有这个部门');
+          v_dmsg:='没有这个部门，请核实';
+          v_updatecount:=0;
+       end if;
+exception
+
+ when  others  then 
+  v_dmsg:='这个部门是有的，但是没有员工';
+  v_updatecount:=0;
+end;
+
+
+
+
+--2.游标直接遍历
+
+--自定义函数  特殊的存储过程
+
+--事务
 
 
 --游标
@@ -414,9 +525,9 @@ end;
 
 --视图
 
---锁
 
---事务
+
+--锁
 
 -- 定时任务
 
