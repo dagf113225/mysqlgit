@@ -72,3 +72,6 @@ SELECT   *  FROM  t_stus   LIMIT 6,3
 
 -- 不支持直接计算
 SELECT   *  FROM  t_stus   LIMIT (2-1)*3,3
+
+SELECT  * FROM  t_fmenu
+SELECT  cid ,cname   FROM  t_cmenu   WHERE fcid=1

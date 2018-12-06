@@ -315,7 +315,7 @@ CREATE  TABLE   t_km
 (
 
    kid  INT  PRIMARY KEY  AUTO_INCREMENT,
-   kname  VARCHAR(20)  NOT  NULL, -- 科目名称
+   kname  VARCHAR(20)  NOT  NULL -- 科目名称
 
 )
 
@@ -351,7 +351,8 @@ VALUES('python班','7032','654321@qq.com');
 INSERT  INTO  t_classes(cname,caddress,cqq)
 VALUES('go班','7033','678901@qq.com');
 
-SELECT   * FROM  t_classes
+
+
 
 -- 定义学生表的数据
 
@@ -485,6 +486,135 @@ SELECT  *  FROM  t_stus
 
 -- 男女的比例
 SELECT ssex,COUNT(*) FROM t_stus  GROUP  BY ssex 
+
+------------------多表的查询(2张表查询)--------------------------------------------
+-- 班级表
+SELECT   * FROM  t_classes
+
+
+-- 学生表
+SELECT   * FROM  t_stus
+
+-- 角色表
+SELECT  * FROM  t_role
+
+-- 科目表
+SELECT  *  FROM   t_km
+
+-- 成绩表
+SELECT  *  FROM  t_score
+
+--  题目1.java班的学生数量
+-- 子查询
+SELECT  COUNT(*) FROM  t_stus  
+WHERE  scid=(SELECT cid FROM  t_classes WHERE cname='java班')
+
+-- 普通查询
+SELECT  COUNT(*)  FROM  t_stus,t_classes WHERE scid=cid  AND 
+cname='java班';
+
+-- 连接查询  内连接查询
+SELECT  COUNT(*)  FROM  t_stus INNER   JOIN  t_classes ON scid=cid  
+WHERE 
+cname='java班';
+
+-- 题目2 每个班的学生的数量
+SELECT  COUNT(*),cname FROM  t_classes INNER  JOIN  t_stus 
+ON  scid = cid  GROUP  BY  cname ;
+
+-- 题目3 每个班的学生的数量大于3人的班级名称
+SELECT  COUNT(*),cname FROM  t_classes INNER  JOIN  t_stus 
+ON  scid = cid  GROUP  BY  cname  HAVING  COUNT(*)>3;
+
+-- 题目4 每个班的学生的数量结果按降序排列
+SELECT  COUNT(*),cname FROM  t_classes INNER  JOIN  t_stus 
+ON  scid = cid  GROUP  BY  cname  ORDER   BY  COUNT(*)  DESC
+
+-- 题目5 java班学生的角色名称有哪些? java班学生的角色是领导的?
+SELECT rname  FROM  t_role  WHERE  rid IN (SELECT  sjob FROM  t_stus  
+WHERE  scid=(SELECT cid FROM  t_classes WHERE cname='java班'))
+AND rname<>'学生'
+
+--  DISTINCT 过滤重复
+SELECT  DISTINCT(rname) FROM  t_role  INNER   JOIN  
+(SELECT  sjob  FROM  t_classes   INNER   JOIN  t_stus   
+ON  scid = cid  WHERE cname='java班') temp ON rid=temp.sjob;
+
+-- java班学生选修‘英语’的均分  
+ SELECT  kid  FROM  t_km  WHERE kname='英语'
+ 
+SELECT  FORMAT(AVG(score),3)  FROM (SELECT  kid ,score FROM   
+(SELECT kid ,score  FROM  t_score WHERE sid IN 
+(SELECT  sid   FROM  t_stus WHERE scid
+  =(SELECT  cid  FROM  t_classes  WHERE cname='java班'))) temp 
+  WHERE temp.kid=
+  ( SELECT  kid  FROM  t_km  WHERE kname='英语')) aa
+
+
+
+
+INSERT   INTO   t_km(kname)  VALUES('英语');
+INSERT   INTO   t_km(kname)  VALUES('语文');
+INSERT   INTO   t_km(kname)  VALUES('数学');
+
+SELECT   * FROM  t_stus
+
+SELECT   * FROM  t_km
+
+-- 科目表和学生表  多对多关系， 中间第三张关系表，成绩表
+SELECT  *  FROM  t_score
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(1,1,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(1,2,80);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(2,1,81);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(3,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(3,2,70);
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(4,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(4,1,70);
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(5,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(5,2,70);
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(6,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(6,2,70);
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(7,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(7,2,70);
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(8,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(8,2,70);
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(9,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(9,2,70);
+
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(10,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(10,2,70);
+
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(3,3,90);
+INSERT  INTO  t_score(sid,kid,score)
+VALUE(3,2,70);
 
 -- 1.学生籍贯的比例
 -- 2.学生职务的比例
