@@ -462,7 +462,7 @@ begin
           --  select   *  from  t_employee  where tdnum =(select t_depts.dnum
           --  from  t_depts  where dname=v_dname);
           
-          --结果集
+          --结果集  在存储过程内部对游标的直接的遍历 
              for v_linedata  in  (select   *  from   t_employee e  right  join
                 t_depts  d   on e.tdnum=d.dnum  where d.dname=v_dname) loop
                    -- dbms_output.put_line(v_linedata.tname||','||v_linedata.tjob);
@@ -505,19 +505,206 @@ exception
   v_updatecount:=0;
 end;
 
+---直接返回游标
+--2.游标直接返回编程语言
 
+-- 每个部门的员工的职务的名称和数量
+select dname,nvl(tjob,'没有员工或没有职务'),count(tjob)  from  t_depts  d left  join  
+t_employee e on  d.dnum=
+e.tdnum  group  by  dname,tjob;
 
+-- 每个部门的员工的职务的名称和数量
+-- sys_refcursor 游标类型 代表结果集，多条记录
+create or replace  procedure  p_two
+(
+   v_datas  out sys_refcursor   
+)
+as
+begin
 
---2.游标直接遍历
+-- 结果集的状态一定是打开的
+open v_datas  for   select dname,nvl(tjob,'没有员工或没有职务'),count(tjob)  from  t_depts  d left  join  
+t_employee e on  d.dnum=
+e.tdnum  group  by  dname,tjob;
+end;
+
+ -- 返回输入部门的员工数量，返回职务的是**职务名称的员工的姓名和籍贯
+ select  * from  t_employee
+ --1.部门名称   职务名称  2.员工数量，员工的姓名和籍贯
+ 
+ create   or   replace   procedure   p_three
+ (
+      v_dname  in  varchar2,
+      v_job  in varchar2,
+      v_empcount  out   number,
+      v_empinfo  out  sys_refcursor,
+      v_str1  out  varchar2,
+      v_str2  out  varchar2
+ )
+ as
+ v_jcount  number:=0;
+v_dount  number:=0;
+ begin
+  -- 1.得到部门的员工数量
+    select  count(*) into v_dount  from  t_depts d   where d.dname=v_dname;
+    
+    if  v_dount>0  then
+    
+          select  count(*)  into  v_empcount  from  t_depts  d  left   join  t_employee e
+          on d.dnum=e.tdnum  where d.dname=v_dname;
+    else
+         v_str1:='没有这个部门';
+    
+    end  if;
+  
+   --2. 职务名称的员工姓名和籍贯
+   select  count(*) into v_jcount  from  t_employee e  where e.tjob=v_job;
+   
+   if  v_jcount>0 then
+           open v_empinfo  for
+           select  tname,taddress  from   t_employee  e  where e.tjob=v_job;
+   else
+     
+          v_str2:='没有这个职务名称';
+   
+   end if;
+   
+
+  
+  exception 
+  
+  when   others  then 
+    SYS.dbms_output.put_line('没有这个职务');
+    v_empcount:=0;
+    v_empinfo:=null;
+
+ end;
 
 --自定义函数  特殊的存储过程
+
+-- 存储过程可以有多个返回值  out 参数
+-- 自定义函数有且只能有一个输出参数   out参数
+
+--这个部门的员工的数量
+create  or replace  function f_one
+(
+v_dname  in  varchar2
+) 
+return number -- 这个地方不能加; 代表这个函数返回什么具体类型的函数
+as
+
+v_count   number :=0;   
+begin
+   select  count(*) into v_count  from t_employee e  right join  t_depts d  on e.tdnum=d.dnum
+   where d.dname=v_dname;
+   
+   return v_count;
+     
+     
+
+end;
+
+--动态sql
+
+-- 如果查询员工表的数量
+-- 如果查询部门的表的数量
+
+select  count(*)  from  t_employee
+
+select  count(*)  from  t_depts
+
+
+create  or replace  function f_one1
+return number -- 这个地方不能加; 代表这个函数返回什么具体类型的函数
+as
+
+v_count   number :=0;   
+begin
+    
+   select  count(*)  into  v_count  from  t_employee;
+   return  v_count;
+end;
+
+-- 自定义函数+动态sql
+-- 得到任意一张表的条数
+-- 动态sql得到一个值
+create  or  replace  function   f_exec
+(
+   v_tablename in  varchar2
+)
+return number
+as
+v_sql varchar2(1000):='';
+v_count number:=0;
+begin
+  v_sql:='select  count(*)    from   '||v_tablename;
+  
+  -- 怎么执行sql execute  immediate
+  execute  immediate v_sql into v_count;
+  return v_count;
+
+end;
+-- 动态sql多个值,直接返回结果集
+create  or  replace  function  f_execone
+(
+ 
+   v_tablename in  varchar2
+)
+return sys_refcursor
+as
+v_datas sys_refcursor;
+v_sql varchar2(1000):='';
+begin 
+   v_sql:='select  *   from   '||v_tablename;
+   
+   -- 直接返回游标
+   open v_datas  for  v_sql;
+   return  v_datas;
+   
+end;
+
+select  * from  t_depts
+
+-- 动态sql多个值,在内部遍历
+create  or  replace  function  f_exectwo
+(
+    v_tablename in  varchar2
+)
+return  varchar2
+as
+v_sql varchar2(1000):='';
+v_datas sys_refcursor;
+v_tname  varchar2(100):='';
+tname  varchar2(20):='';
+tid  number;
+tphone varchar2(20):='';
+
+begin
+   
+     v_sql:='select  *    from   '||v_tablename;
+      dbms_output.put_line(v_sql);
+     -- 执行动态sql
+     open  v_datas  for v_sql;
+     
+     -- 内部对游标的遍历
+     loop  fetch v_datas  into tid,tname,tphone;
+         exit  when  v_datas%notfound;  --有没有数据被发现
+           dbms_output.put_line(tid||','||tname||','||tphone);
+           v_tname:=v_tname||tid||','||tname||','||tphone;
+           
+     end loop;
+       dbms_output.put_line(v_tname);
+return  v_tname;
+end;
+
+--游标
 
 --事务
 
 
---游标
 
---动态sql
+
+
 
 --触发器
 
